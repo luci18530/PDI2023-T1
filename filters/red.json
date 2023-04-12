@@ -1,0 +1,7 @@
+{
+	"kernel": [
+		[ [ 1, 0, 0] ]
+	],
+	"pivot": [0, 0],
+	"zero_extension":  true
+}
