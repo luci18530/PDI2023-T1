@@ -104,28 +104,6 @@ class DataFilter(AbstractFilter):
 			filter_json = json.load(file)
 			return DataFilter(path.stem, np.array(filter_json['kernel']), tuple(filter_json['pivot']), filter_json['zero_extension'])
 
-	def from_txt(path):
-		path = Path(path)
-		with path.open() as f:
-			name = path.stem
-
-			# kernel reading
-			rows = int(f.readline())
-			columns = int(f.readline())
-			kernel = [[float(column) for column in row.split(' ')] for row in [f.readline() for _ in range(rows)]]
-
-			pivot = tuple(int(num) for num in f.readline().strip().split(' '))
-
-			zero_extension_str = f.readline().strip().lower()
-			if zero_extension_str == 'true':
-				zero_extension = True
-			elif zero_extension_str == 'false':
-				zero_extension = False
-			else:
-				raise ValueError(f'Invalid file format. zero_extension must be either true or false')
-
-			return DataFilter(name, np.array(kernel), pivot, zero_extension)
-
 	def _filter_op(self, apply_area_array):
 		return np.sum(apply_area_array * self.kernel, axis=(0, 1))
 

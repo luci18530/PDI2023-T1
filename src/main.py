@@ -23,7 +23,6 @@ def save_img(img_array, original_path, effect_name):
 parser = argparse.ArgumentParser()
 parser.add_argument('FILE', help='path to input image. defaults to stdin')
 parser.add_argument('--output', choices=['terminal', 'terminal-numbers', 'matplotlib', 'save'], default='terminal', help='sets output method')
-parser.add_argument('--input-format', choices=['txt', 'json'], default='txt', help='sets input format')
 parser.add_argument('--no-original', action='store_true', help='do not show original image')
 # 1
 parser.add_argument('--yiq', action='store_true', help='performs RGB-YIQ-RGB conversion')
@@ -94,10 +93,7 @@ if args.filter:
         if f[0] == '[' and f[-1] == ']':
             new_filter = filter.get_function_filter(f)
         else:
-            if args.input_format == 'json':
-                new_filter = filter.DataFilter.from_json(f)
-            else:
-                new_filter = filter.DataFilter.from_txt(f)
+            new_filter = filter.DataFilter.from_json(f)
         img_arr_filtered = new_filter.apply(img_arr.copy())
         display_handler(img_arr_filtered, f'Filtered Image with {new_filter.name}')
         save_handler(img_arr_filtered, IMAGE_PATH, f'filter-{new_filter.name}')
