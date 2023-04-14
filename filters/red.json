@@ -3,5 +3,6 @@
 		[ [ 1, 0, 0] ]
 	],
 	"pivot": [0, 0],
-	"zero_extension":  true
+	"zero_extension":  true,
+    "limit_function": "clip"
 }

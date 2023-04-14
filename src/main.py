@@ -23,6 +23,7 @@ def save_img(img_array, original_path, effect_name):
 parser = argparse.ArgumentParser()
 parser.add_argument('FILE', help='path to input image. defaults to stdin')
 parser.add_argument('--output', choices=['terminal', 'terminal-numbers', 'matplotlib', 'save'], default='terminal', help='sets output method')
+parser.add_argument('--grayscale', action='store_true', help='convert image to grayscale')
 parser.add_argument('--no-original', action='store_true', help='do not show original image')
 # 1
 parser.add_argument('--yiq', action='store_true', help='performs RGB-YIQ-RGB conversion')
@@ -48,6 +49,8 @@ display_handler = {'terminal': display.terminal,
 save_handler = save_img if args.output == 'save' else lambda *args: None # do nothing
 
 with Image.open(IMAGE_PATH) as img:
+    if args.grayscale:
+        img = img.convert('L')
     img_arr = np.asarray(img.convert('RGB'))
     img_arr_norm = img_arr / 255
 

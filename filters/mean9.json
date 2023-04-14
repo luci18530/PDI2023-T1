@@ -11,5 +11,6 @@
 		[ 0.012345, 0.012345, 0.012345, 0.012345, 0.012345, 0.012345, 0.012345, 0.012345, 0.012345 ]
 	],
 	"pivot": [4, 4],
-	"zero_extension":  true
+	"zero_extension":  true,
+    "limit_function": "clip"
 }

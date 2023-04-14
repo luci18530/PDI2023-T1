@@ -13,6 +13,12 @@ import statistics as stats
 #           [4, 5, 6],
 #           [7, 8, 9]])
 
+LIMIT_FUNCTIONS = {
+	'clip': lambda arr: np.clip(arr, 0, 255),
+	#? TODO: clip or renormalise?
+	'absolute': lambda arr:np.clip(np.array([np.abs(band) for band in arr]), 0, 255),
+	'renormalise': lambda arr: np.array([((band - np.min(band)) / (np.max(band) - np.min(band))) * 255 for band in arr]),
+}
 
 @dataclass(frozen=True)
 class AbstractFilter:
@@ -20,6 +26,7 @@ class AbstractFilter:
 	kernel: np.array
 	pivot: tuple
 	zero_extension: bool
+	limit_function: callable
 
 	def __post_init__(self):
 		self.self_check()
@@ -88,7 +95,7 @@ class AbstractFilter:
 		new_img = np.empty((apply_area['row']['to'] - apply_area['row']['from'], apply_area['column']['to'] - apply_area['column']['from'], 3))
 		for row in range(apply_area['row']['from'], apply_area['row']['to']):
 			for column in range(apply_area['column']['from'], apply_area['column']['to']):
-				new_img[row - padding['row']['before'], column - padding['column']['before'], :] = self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1])
+				new_img[row - padding['row']['before'], column - padding['column']['before'], :] = self.limit_function(self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1]))
 
 		return new_img.round().astype(np.uint8)
 	
@@ -102,7 +109,11 @@ class DataFilter(AbstractFilter):
 		path = Path(path)
 		with path.open() as file:
 			filter_json = json.load(file)
-			return DataFilter(path.stem, np.array(filter_json['kernel']), tuple(filter_json['pivot']), filter_json['zero_extension'])
+			return DataFilter(path.stem,
+							  np.array(filter_json['kernel']),
+							  tuple(filter_json['pivot']),
+							  filter_json['zero_extension'],
+							  LIMIT_FUNCTIONS[filter_json['limit_function']])
 
 	def _filter_op(self, apply_area_array):
 		return np.sum(apply_area_array * self.kernel, axis=(0, 1))
@@ -113,7 +124,7 @@ class FunctionFilter(AbstractFilter):
 	func: callable
 
 	def __init__(self, name, rows, columns, pivot, zero_extension, func):
-		super().__init__(name, np.empty((rows, columns, 3)), pivot, zero_extension)
+		super().__init__(name, np.empty((rows, columns, 3)), pivot, zero_extension, LIMIT_FUNCTIONS['clip'])
 		object.__setattr__(self, "func", func)
 
 	def _filter_op(self, apply_area_array):

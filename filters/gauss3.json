@@ -5,5 +5,6 @@
 		[ 0.0625, 0.125, 0.0625 ]
 	],
 	"pivot": [1, 1],
-	"zero_extension":  true
+	"zero_extension":  true,
+	"limit_function":  "clip"
 }
