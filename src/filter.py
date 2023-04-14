@@ -7,12 +7,10 @@ from pathlib import Path
 from functools import partial
 import statistics as stats
 
-# Read to a numpy array:
-# ex:
-# np.array([[1, 2, 3],
-#           [4, 5, 6],
-#           [7, 8, 9]])
-
+# funções que limitam valores de pixels entre 0 e 255
+# clip: limita valores entre 0 e 255, valores abaixo de 0 são 0 e valores acima de 255 são 255
+# absolute: aplicar valor absoluto a cada pixel, limitando entre 0 e 255
+# renormalise: normaliza os valores de cada pixel para o intervalo [0, 255]
 LIMIT_FUNCTIONS = {
 	'clip': lambda arr: np.clip(arr, 0, 255),
 	#? TODO: clip or renormalise?
@@ -22,6 +20,7 @@ LIMIT_FUNCTIONS = {
 
 @dataclass(frozen=True)
 class AbstractFilter:
+	"""classe base para filtros"""
 	name: str
 	kernel: np.array
 	pivot: tuple
@@ -32,6 +31,7 @@ class AbstractFilter:
 		self.self_check()
 
 	def self_check(self):
+		"""checa se o filtro é válido"""
 		if any(len(row) != len(self.kernel[0]) for row in self.kernel):
 			raise ValueError(f'Invalid kernel for filter {self.name}. Not all rows have the same length')
 
@@ -46,6 +46,10 @@ class AbstractFilter:
 		if len(self.pivot) != 2:
 			raise ValueError(f'Invalid pivot for filter {self.name}. Pivot must have 2 dimensions')
 
+		# check if pivot elements are integers
+		if not all(isinstance(element, int) for element in self.pivot):
+			raise ValueError(f'Invalid pivot for filter {self.name}. Pivot elements must be integers')
+
 		if self.pivot[0] >= len(self.kernel) or self.pivot[1] >= len(self.kernel[0]):
 			raise ValueError(f'Invalid pivot for filter {self.name}. Pivot is out of bounds')
 
@@ -53,6 +57,8 @@ class AbstractFilter:
 			raise ValueError(f'Invalid zero_extension for filter {self.name}. zero_extension must be a boolean')
 
 	def apply(self, image_array):
+		"""aplica o filtro em uma imagem"""
+		# calcula quanto padding é necessário para aplicar o filtro
 		padding = {
 			'row': {
 				'before': self.pivot[0],
@@ -69,6 +75,7 @@ class AbstractFilter:
 								 (padding['column']['before'], padding['column']['after']),
 								 (0, 0)),
 								'constant', constant_values=0)
+			# area de aplicação de filtro (por onde o pivô vai passar)
 			apply_area = {
 				'row': {
 					'from': padding['row']['before'],
@@ -81,6 +88,8 @@ class AbstractFilter:
 			}
 		else:
 			img_padded = image_array.copy()
+			# area de aplicação de filtro (por onde o pivô vai passar)
+			# remove as bordas em que o pivô não consegue passar da área de aplicação
 			apply_area = {
 				'row': {
 					'from': padding['row']['before'],
@@ -92,19 +101,25 @@ class AbstractFilter:
 				}
 			}
 
+		# nova imagem com as dimensões da área de aplicação
 		new_img = np.empty((apply_area['row']['to'] - apply_area['row']['from'], apply_area['column']['to'] - apply_area['column']['from'], 3))
-		for row in range(apply_area['row']['from'], apply_area['row']['to']):
-			for column in range(apply_area['column']['from'], apply_area['column']['to']):
-				new_img[row - padding['row']['before'], column - padding['column']['before'], :] = self.limit_function(self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1]))
+		# aplica o filtro para cada pixel da área de aplicação
+		for i, row in enumerate(range(apply_area['row']['from'], apply_area['row']['to'])):
+			for j, column in enumerate(range(apply_area['column']['from'], apply_area['column']['to'])):
+				# chama _filter_op para aplicar o filtro
+				new_img[i, j, :] = self.limit_function(self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1]))
 
 		return new_img.round().astype(np.uint8)
 	
 	def _filter_op(self, apply_area_array):
+		"""aplica o filtro em uma área de aplicação"""
+		# não implementado na classe base
 		raise NotImplementedError(f'Trying to apply abstract filter. Use one of the subclasses instead. Filter name: {self.name}')
 
 
 @dataclass(frozen=True)
 class DataFilter(AbstractFilter):
+	"""classe para filtros definidos em um arquivo json"""
 	def from_json(path):
 		path = Path(path)
 		with path.open() as file:
@@ -121,6 +136,7 @@ class DataFilter(AbstractFilter):
 
 @dataclass(frozen=True, init=False)
 class FunctionFilter(AbstractFilter):
+	"""classe para filtros definidos por uma função"""
 	func: callable
 
 	def __init__(self, name, rows, columns, pivot, zero_extension, func):
@@ -149,6 +165,8 @@ FUNCTIONS_FILTER_TABLE = {
 }
 
 def get_function_filter(filter_str):
+	"""retorna um filtro definido por uma função
+	faz o parsing da string e retorna o filtro correspondente"""
 	# remove brackets
 	filter_str = filter_str[1:-1]
 	name, rows, columns, pivot_x, pivot_y, zero_extension = filter_str.split(',')

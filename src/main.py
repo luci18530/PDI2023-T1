@@ -12,6 +12,7 @@ import filter
 
 
 def save_img(img_array, original_path, effect_name):
+    """Salva a imagem com o efeito aplicado no mesmo diretório e com o mesmo nome, mas com '_<effect_name>' antes da extensão"""
     new_img = Image.fromarray(img_array)
     path = Path(original_path)
     # save image on the same path and name but with '_<effect_name>' before the extension
@@ -19,26 +20,24 @@ def save_img(img_array, original_path, effect_name):
 
 
 # TODO: short options
-# TODO: add pipeline option instead of filter sequence
 parser = argparse.ArgumentParser()
-parser.add_argument('FILE', help='path to input image. defaults to stdin')
-parser.add_argument('--output', choices=['terminal', 'terminal-numbers', 'matplotlib', 'save'], default='terminal', help='sets output method')
+parser.add_argument('FILE', help='path to input image')
+parser.add_argument('--output', choices=['terminal', 'terminal-numbers', 'matplotlib', 'save'], default='terminal', help='sets image output method')
 parser.add_argument('--grayscale', action='store_true', help='convert image to grayscale')
-parser.add_argument('--no-original', action='store_true', help='do not show original image')
+parser.add_argument('--no-original', action='store_true', help='do not show the original image')
 # 1
 parser.add_argument('--yiq', action='store_true', help='performs RGB-YIQ-RGB conversion')
 # 2
 parser.add_argument('--neg-rgb', action='store_true', help='performs RGB negative')
 parser.add_argument('--neg-y', action='store_true', help='performs Y negative')
 # 3 & 4
+# filtros e sequencias de filtros podem ser especificadas multiplas vezes para ver o efeito de cada um
+# os filtros especiais (como mediana) devem ser colocados entre colchetes sem espaços (ex: [mediana,3,3,1,1,true]
+# o formato desses filtros especiais é: [nome, linhas, colunas, pivô x, pivô y, extensão com zeros]
 parser.add_argument('--filter', action='append', help='apply filter to image. Can be used multiple times for multiple filters. Function filters (like median) should be put inside square brackets without spaces (e.g. [median,3,3,1,1,true]')
 parser.add_argument('--filter-sequence', nargs='+', action='append', help='apply a sequence of filters to image. Can be used multiple times for multiple filter sequences')
-# 5
-parser.add_argument('--correlation', nargs='+', action='append', help='apply correlation to image. Can be used multiple times for multiple correlations. <n> says how many correlations to perform in a single image')
 
 args = parser.parse_args()
-
-# TODO: filters on files shouldn't be 3D?
 
 IMAGE_PATH = args.FILE
 display_handler = {'terminal': display.terminal,
