@@ -6,6 +6,6 @@
 	],
 	"pivot": [1, 1],
 	"zero_extension":  false,
-    "limit_function": "clip",
+    "limit_function": "absolute",
 	"offset": 128
 }
