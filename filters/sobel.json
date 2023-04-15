@@ -1,0 +1,11 @@
+{
+	"kernel": [
+		[ -2, -2,  0 ],
+		[ -2,  0,  2 ],
+		[  0,  2,  2 ]
+	],
+	"pivot": [1, 1],
+	"zero_extension":  true,
+    "limit_function": "absolute",
+	"offset": 0
+}
