@@ -40,6 +40,9 @@ class AbstractFilter:
 			# self.array = np.repeat(self.array[:, :, np.newaxis], 3, axis=2)
 			object.__setattr__(self, "kernel", np.repeat(self.kernel[:, :, np.newaxis], 3, axis=2))
 
+		if all(dim < 1 for dim in self.kernel.shape):
+			raise ValueError(f'Invalid kernel for filter {self.name}. Filter must have at least one row and one column')
+
 		if any(len(pixel) != 3 for row in self.kernel for pixel in row):
 			raise ValueError(f'Invalid kernel for filter {self.name}. Filter "pixels" must have 1 or 3 channels')
 
