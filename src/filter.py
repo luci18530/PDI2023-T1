@@ -156,11 +156,11 @@ class FunctionFilter(AbstractFilter):
 		return self.func(apply_area_array)
 
 
-BOX_FILTER = partial(FunctionFilter, '[box]', func=lambda array: [np.mean(array[:,:,band]) for band in range(array.shape[2])])
-MEDIAN_FILTER = partial(FunctionFilter, '[median]', func=lambda array: [np.median(array[:,:,band]) for band in range(array.shape[2])])
-MODE_FILTER = partial(FunctionFilter, '[mode]', func=lambda array: [stats.mode(array[:,:,band].flatten()) for band in range(array.shape[2])])
-ERODE_FILTER = partial(FunctionFilter, '[erode]', func=lambda array: [np.min(array[:,:,band]) for band in range(array.shape[2])])
-DILATE_FILTER = partial(FunctionFilter, '[dilate]', func=lambda array: [np.max(array[:,:,band]) for band in range(array.shape[2])])
+BOX_FILTER = partial(FunctionFilter, '[box]', func=lambda array: np.array([np.mean(array[:,:,band]) for band in range(array.shape[2])]))
+MEDIAN_FILTER = partial(FunctionFilter, '[median]', func=lambda array: np.array([np.median(array[:,:,band]) for band in range(array.shape[2])]))
+MODE_FILTER = partial(FunctionFilter, '[mode]', func=lambda array: np.array([stats.mode(array[:,:,band].flatten()) for band in range(array.shape[2])]))
+ERODE_FILTER = partial(FunctionFilter, '[erode]', func=lambda array: np.array([np.min(array[:,:,band]) for band in range(array.shape[2])]))
+DILATE_FILTER = partial(FunctionFilter, '[dilate]', func=lambda array: np.array([np.max(array[:,:,band]) for band in range(array.shape[2])]))
 
 FUNCTIONS_FILTER_TABLE = {
 	'box': BOX_FILTER,
