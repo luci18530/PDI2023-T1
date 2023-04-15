@@ -26,6 +26,7 @@ class AbstractFilter:
 	pivot: tuple
 	zero_extension: bool
 	limit_function: callable
+	offset: int
 
 	def __post_init__(self):
 		self.self_check()
@@ -58,6 +59,10 @@ class AbstractFilter:
 
 		if not isinstance(self.zero_extension, bool):
 			raise ValueError(f'Invalid zero_extension for filter {self.name}. zero_extension must be a boolean')
+
+		# check if offset is an integer
+		if not isinstance(self.offset, int):
+			raise ValueError(f'Invalid offset for filter {self.name}. Offset must be an integer')
 
 	def apply(self, image_array):
 		"""aplica o filtro em uma imagem"""
@@ -110,7 +115,7 @@ class AbstractFilter:
 		for i, row in enumerate(range(apply_area['row']['from'], apply_area['row']['to'])):
 			for j, column in enumerate(range(apply_area['column']['from'], apply_area['column']['to'])):
 				# chama _filter_op para aplicar o filtro
-				new_img[i, j, :] = self.limit_function(self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1]))
+				new_img[i, j, :] = self.limit_function(self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1]) + self.offset)
 
 		return new_img.round().astype(np.uint8)
 	
@@ -131,7 +136,8 @@ class DataFilter(AbstractFilter):
 							  np.array(filter_json['kernel']),
 							  tuple(filter_json['pivot']),
 							  filter_json['zero_extension'],
-							  LIMIT_FUNCTIONS[filter_json['limit_function']])
+							  LIMIT_FUNCTIONS[filter_json['limit_function']],
+							  filter_json['offset'])
 
 	def _filter_op(self, apply_area_array):
 		return np.sum(apply_area_array * self.kernel, axis=(0, 1))
@@ -143,7 +149,7 @@ class FunctionFilter(AbstractFilter):
 	func: callable
 
 	def __init__(self, name, rows, columns, pivot, zero_extension, func):
-		super().__init__(name, np.empty((rows, columns, 3)), pivot, zero_extension, LIMIT_FUNCTIONS['clip'])
+		super().__init__(name, np.empty((rows, columns, 3)), pivot, zero_extension, LIMIT_FUNCTIONS['clip'], offset=0)
 		object.__setattr__(self, "func", func)
 
 	def _filter_op(self, apply_area_array):

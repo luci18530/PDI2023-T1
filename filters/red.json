@@ -4,5 +4,6 @@
 	],
 	"pivot": [0, 0],
 	"zero_extension":  true,
-    "limit_function": "clip"
+    "limit_function": "clip",
+	"offset": 0
 }
