@@ -1,0 +1,11 @@
+{
+	"kernel": [
+		[  2,  0,  0 ],
+		[  0, -1,  0 ],
+		[  0,  0, -1 ]
+	],
+	"pivot": [1, 1],
+	"zero_extension":  false,
+    "limit_function": "clip",
+	"offset": 128
+}
