@@ -22,7 +22,7 @@ def save_img(img_array, original_path, effect_name):
 # TODO: short options
 parser = argparse.ArgumentParser()
 parser.add_argument('FILE', help='path to input image')
-parser.add_argument('--output', choices=['terminal', 'terminal-numbers', 'matplotlib', 'save'], default='terminal', help='sets image output method')
+parser.add_argument('--output', choices=['terminal', 'terminal-numbers', 'matplotlib', 'save'], default='matplotlib', help='sets image output method')
 parser.add_argument('--grayscale', action='store_true', help='convert image to grayscale')
 parser.add_argument('--no-original', action='store_true', help='do not show the original image')
 # 1
