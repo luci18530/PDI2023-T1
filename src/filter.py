@@ -166,13 +166,14 @@ class FunctionFilter(AbstractFilter):
 	def _filter_op(self, apply_area_array):
 		return self.func(apply_area_array)
 
-
+# Definindo alguns filtros que serão utilizados posteriormente
 BOX_FILTER = partial(FunctionFilter, '[box]', func=lambda array: np.array([np.mean(array[:,:,band]) for band in range(array.shape[2])]))
 MEDIAN_FILTER = partial(FunctionFilter, '[median]', func=lambda array: np.array([np.median(array[:,:,band]) for band in range(array.shape[2])]))
 MODE_FILTER = partial(FunctionFilter, '[mode]', func=lambda array: np.array([stats.mode(array[:,:,band].flatten()) for band in range(array.shape[2])]))
 ERODE_FILTER = partial(FunctionFilter, '[erode]', func=lambda array: np.array([np.min(array[:,:,band]) for band in range(array.shape[2])]))
 DILATE_FILTER = partial(FunctionFilter, '[dilate]', func=lambda array: np.array([np.max(array[:,:,band]) for band in range(array.shape[2])]))
 
+# Cria um dicionário que associa uma string (nome do filtro) com uma função de filtro correspondente
 FUNCTIONS_FILTER_TABLE = {
 	'box': BOX_FILTER,
 	'mean': BOX_FILTER,
@@ -187,20 +188,29 @@ FUNCTIONS_FILTER_TABLE = {
 def get_function_filter(filter_str):
 	"""retorna um filtro definido por uma função
 	faz o parsing da string e retorna o filtro correspondente"""
-	# remove brackets
+    
+	# Remove os colchetes da string
 	filter_str = filter_str[1:-1]
+    
+    # Separa os parâmetros do filtro por vírgula
 	name, rows, columns, pivot_x, pivot_y, zero_extension = filter_str.split(',')
+    
+    # Verifica se o nome do filtro é válido (está presente na tabela de funções)
 	if name not in FUNCTIONS_FILTER_TABLE:
 		raise ValueError(f'Invalid function filter name [{name}]')
 
+    # Converte os parâmetros para os tipos corretos
 	rows = int(rows)
 	columns = int(columns)
 	pivot = (int(pivot_x), int(pivot_y))
+    
+    # Converte o parâmetro zero_extension para booleano
 	if zero_extension.lower() == 'true':
 		zero_extension = True
 	elif zero_extension.lower() == 'false':
 		zero_extension = False
 	else:
 		raise ValueError(f'Invalid zero_extension on function filter {name}. zero_extension must be either true or false')
-
+    
+    # Retorna o filtro correspondente à string passada como parâmetro
 	return FUNCTIONS_FILTER_TABLE[name](rows, columns, pivot, zero_extension)
