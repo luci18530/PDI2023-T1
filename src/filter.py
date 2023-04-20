@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import json
-import numpy as np
+import json #Importa a biblioteca json para ler arquivos .json
+import numpy as np 
 from dataclasses import dataclass
 from pathlib import Path
 from functools import partial
@@ -28,11 +28,14 @@ class AbstractFilter:
 	limit_function: callable
 	offset: int
 
+    # Define um método que é executado após a inicialização da classe,
+	# que checa se o filtro é válido
 	def __post_init__(self):
 		self.self_check()
 
 	def self_check(self):
 		"""checa se o filtro é válido"""
+        # Checa se todas as linhas da matriz do kernel têm o mesmo tamanho
 		if any(len(row) != len(self.kernel[0]) for row in self.kernel):
 			raise ValueError(f'Invalid kernel for filter {self.name}. Not all rows have the same length')
 
@@ -40,13 +43,16 @@ class AbstractFilter:
 		if len(self.kernel.shape) == 2:
 			# self.array = np.repeat(self.array[:, :, np.newaxis], 3, axis=2)
 			object.__setattr__(self, "kernel", np.repeat(self.kernel[:, :, np.newaxis], 3, axis=2))
-
+        
+        # Checa se o kernel tem pelo menos uma linha e uma coluna
 		if all(dim < 1 for dim in self.kernel.shape):
 			raise ValueError(f'Invalid kernel for filter {self.name}. Filter must have at least one row and one column')
-
+        
+        # Checa se cada "pixel" do kernel tem 1 ou 3 canais
 		if any(len(pixel) != 3 for row in self.kernel for pixel in row):
 			raise ValueError(f'Invalid kernel for filter {self.name}. Filter "pixels" must have 1 or 3 channels')
-
+        
+        # Checa se o pivo tem 2 dimensões
 		if len(self.pivot) != 2:
 			raise ValueError(f'Invalid pivot for filter {self.name}. Pivot must have 2 dimensions')
 
@@ -54,13 +60,15 @@ class AbstractFilter:
 		if not all(isinstance(element, int) for element in self.pivot):
 			raise ValueError(f'Invalid pivot for filter {self.name}. Pivot elements must be integers')
 
+        # Checa se o pivot está dentro dos limites do kernel
 		if self.pivot[0] >= len(self.kernel) or self.pivot[1] >= len(self.kernel[0]):
 			raise ValueError(f'Invalid pivot for filter {self.name}. Pivot is out of bounds')
-
+        
+        # Checa se zero_extension é um booleano
 		if not isinstance(self.zero_extension, bool):
 			raise ValueError(f'Invalid zero_extension for filter {self.name}. zero_extension must be a boolean')
 
-		# check if offset is an integer
+		# Checa se offset é um inteiro
 		if not isinstance(self.offset, int):
 			raise ValueError(f'Invalid offset for filter {self.name}. Offset must be an integer')
 
@@ -77,6 +85,8 @@ class AbstractFilter:
 				'after': self.kernel.shape[1] - self.pivot[1] - 1
 			}
 		}
+        
+        # Se o zero_extension for True, a imagem é extendida com zeros para aplicação do filtro
 		if self.zero_extension:
 			img_padded = np.pad(image_array,
 								((padding['row']['before'], padding['row']['after']),
@@ -94,6 +104,7 @@ class AbstractFilter:
 					'to': padding['column']['before'] + image_array.shape[1]
 				}
 			}
+        # Se não houver extensão por zeros, a imagem é copiada e as bordas que o pivô não pode passar são removidas
 		else:
 			img_padded = image_array.copy()
 			# area de aplicação de filtro (por onde o pivô vai passar)
