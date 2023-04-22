@@ -32,9 +32,3 @@ def matplotlib_imshow(img_array, name='Resulting Image'):
     plt.title(name)
     plt.imshow(img_array)
     plt.show()
-
-# função que salva a imagem em um arquivo .png
-def save(img_array, name='Resulting Image'):
-    plt.title(name)
-    plt.imshow(img_array)
-    plt.savefig('result.png')
