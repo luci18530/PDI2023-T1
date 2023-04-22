@@ -15,5 +15,6 @@
 	"pivot": [5, 0],
 	"zero_extension":  true,
 	"limit_function":  "clip",
-	"offset": 0
+	"offset": 0,
+	"histogram_expansion": false
 }

@@ -7,15 +7,21 @@ from pathlib import Path
 from functools import partial
 import statistics as stats
 
+def histogram_expansion(arr):
+	"""expande o histograma de uma imagem"""
+	arr = arr.copy()
+	for i in range(arr.shape[-1]):
+		band = arr[:,:,i]
+		arr[:,:,i] = np.round(((band - np.min(band)) / (np.max(band) - np.min(band))) * 255)
+	return arr
+
 # funções que limitam valores de pixels entre 0 e 255
 # clip: limita valores entre 0 e 255, valores abaixo de 0 são 0 e valores acima de 255 são 255
 # absolute: aplicar valor absoluto a cada pixel, limitando entre 0 e 255
 # renormalise: normaliza os valores de cada pixel para o intervalo [0, 255]
 LIMIT_FUNCTIONS = {
 	'clip': lambda arr: np.clip(arr, 0, 255),
-	#? TODO: clip or renormalise?
-	'absolute': lambda arr:np.clip(np.array([np.abs(band) for band in arr]), 0, 255),
-	'renormalise': lambda arr: np.array([((band - np.min(band)) / (np.max(band) - np.min(band))) * 255 for band in arr]),
+	'absolute': lambda arr:np.clip(np.abs(arr), 0, 255),
 }
 
 @dataclass(frozen=True)
@@ -27,6 +33,7 @@ class AbstractFilter:
 	zero_extension: bool
 	limit_function: callable
 	offset: int
+	histogram_expansion: bool
 
     # Define um método que é executado após a inicialização da classe,
 	# que checa se o filtro é válido
@@ -71,6 +78,10 @@ class AbstractFilter:
 		# Checa se offset é um inteiro
 		if not isinstance(self.offset, int):
 			raise ValueError(f'Invalid offset for filter {self.name}. Offset must be an integer')
+
+		# Checa se histogram_expansion é um booleano
+		if not isinstance(self.histogram_expansion, bool):
+			raise ValueError(f'Invalid histogram_expansion for filter {self.name}. histogram_expansion must be a boolean')
 
 	def apply(self, image_array):
 		"""aplica o filtro em uma imagem"""
@@ -126,9 +137,13 @@ class AbstractFilter:
 		for i, row in enumerate(range(apply_area['row']['from'], apply_area['row']['to'])):
 			for j, column in enumerate(range(apply_area['column']['from'], apply_area['column']['to'])):
 				# chama _filter_op para aplicar o filtro
-				new_img[i, j, :] = self.limit_function(self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1]) + self.offset)
+				new_img[i, j, :] = self._filter_op(img_padded[row - padding['row']['before']:row + padding['row']['after'] + 1, column - padding['column']['before']:column + padding['column']['after'] + 1]) + self.offset
 
-		return new_img.round().astype(np.uint8)
+		filtered_image = self.limit_function(new_img).round().astype(np.uint8)
+		if self.histogram_expansion:
+			filtered_image = histogram_expansion(filtered_image)
+
+		return filtered_image
 	
 	def _filter_op(self, apply_area_array):
 		"""aplica o filtro em uma área de aplicação"""
@@ -148,7 +163,8 @@ class DataFilter(AbstractFilter):
 							  tuple(filter_json['pivot']),
 							  filter_json['zero_extension'],
 							  LIMIT_FUNCTIONS[filter_json['limit_function']],
-							  filter_json['offset'])
+							  filter_json['offset'],
+							  filter_json['histogram_expansion'])
 
 	def _filter_op(self, apply_area_array):
 		return np.sum(apply_area_array * self.kernel, axis=(0, 1))
@@ -160,7 +176,7 @@ class FunctionFilter(AbstractFilter):
 	func: callable
 
 	def __init__(self, name, rows, columns, pivot, zero_extension, func):
-		super().__init__(name, np.empty((rows, columns, 3)), pivot, zero_extension, LIMIT_FUNCTIONS['clip'], offset=0)
+		super().__init__(name, np.empty((rows, columns, 3)), pivot, zero_extension, LIMIT_FUNCTIONS['clip'], offset=0, histogram_expansion=False)
 		object.__setattr__(self, "func", func)
 
 	def _filter_op(self, apply_area_array):
