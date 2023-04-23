@@ -22,6 +22,8 @@ def histogram_expansion(arr):
 LIMIT_FUNCTIONS = {
 	'clip': lambda arr: np.clip(arr, 0, 255),
 	'absolute': lambda arr:np.clip(np.abs(arr), 0, 255),
+	'renormalize': histogram_expansion,
+	'abs-renormalize': lambda arr: histogram_expansion(np.abs(arr))
 }
 
 @dataclass(frozen=True)
