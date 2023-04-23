@@ -119,5 +119,5 @@ if args.filter_sequence:
                 new_filter = filter.DataFilter.from_json(f)
             img_arr_filtered = new_filter.apply(img_arr_filtered)
         display_handler(img_arr_filtered, f'Filtered Image with {fs}')
-        save_handler(img_arr_filtered, IMAGE_PATH, f'filter sequence-{fs}')
+        save_handler(img_arr_filtered, IMAGE_PATH, f'filter sequence-{[Path(f).stem for f in fs]}')
 
