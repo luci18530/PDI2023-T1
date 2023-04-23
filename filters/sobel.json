@@ -5,7 +5,7 @@
 		[  0,  2,  2 ]
 	],
 	"pivot": [1, 1],
-	"zero_extension":  true,
+	"zero_extension":  false,
     "limit_function": "absolute",
 	"offset": 0,
 	"histogram_expansion": true
