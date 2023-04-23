@@ -1,0 +1,11 @@
+{
+	"kernel": [
+		[ -1,  0 ],
+		[  0,  1 ]
+	],
+	"pivot": [1, 1],
+	"zero_extension":  false,
+    "limit_function": "absolute",
+	"offset": 128,
+	"histogram_expansion": false
+}
