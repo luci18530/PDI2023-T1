@@ -14,7 +14,30 @@
 
 ## Como usar
 
-A ser feito
+Abra o terminal na pasta principal
+
+Questão 1 :
+* python src/main.py .\img\teste.png --yiq
+
+Questão 2:  
+* python src/main.py .\img\teste.png --neg-rgb
+* python src/main.py .\img\teste.png --neg-y
+
+Questão 3:
+
+* python src/main.py .\img\ci.jpeg --filter .\filters\sum3.json
+* python src/main.py .\img\teste.png --filter .\filters\mean3.json
+* python src/main.py .\img\teste.png --filter .\filters\mean9.json
+* python src/main.py .\img\teste.png --filter .\filters\sobelv.json
+* python src/main.py .\img\teste.png --filter .\filters\sobelh.json
+* python src/main.py .\img\teste.png --filter .\filters\sobel.json
+* python src/main.py .\img\teste.png --filter .\filters\emboss.json
+* Measure-Command {python src/main.py .\img\teste.png --filter-sequence [mean,11,1,5,0,true] [mean,1,11,0,5,true]}
+* Measure-Command {python src/main.py .\img\teste.png --filter [mean,11,11,5,5,true]}
+
+Questão 4:
+* python src/main.py .\img\ci.jpeg --filter [median,3,3,1,1,true]
+
 
 ## Autores
 
