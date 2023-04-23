@@ -113,19 +113,10 @@ if args.filter_sequence:
         # Faz uma cópia da imagem original para ser filtrada
         img_arr_filtered = img_arr.copy()
         for f in fs:
-            # Verifica se o filtro é uma função pré-definida
-            if f[0] == '[' and f[-1] == ']':
-                # Obtém a função de filtro a partir da string especificada
+            if f[0] == '[' and f[-1] == ']': # Se o elemento for uma string delimitada por colchetes [ e ], ele é tratado como uma função definida pelo usuário
                 new_filter = filter.get_function_filter(f)
-                
-            # Se não for uma função pré-definida, verifica se o formato de entrada dos filtros é JSON
-            else:
-                # Cria um objeto de filtro de dados a partir da string JSON especificada
-                if args.input_format == 'json':
-                    new_filter = filter.DataFilter.from_json(f)
-                # Se o formato de entrada dos filtros for TXT, cria um objeto de filtro de dados a partir da string TXT especificada
-                else:
-                    new_filter = filter.DataFilter.from_txt(f)
+            else: # Caso contrário, considera que é um filtro em formato JSON e utiliza o método from_json do módulo filter para obter a instância do filtro
+                new_filter = filter.DataFilter.from_json(f)
             img_arr_filtered = new_filter.apply(img_arr_filtered)
         display_handler(img_arr_filtered, f'Filtered Image with {fs}')
         save_handler(img_arr_filtered, IMAGE_PATH, f'filter sequence-{fs}')
