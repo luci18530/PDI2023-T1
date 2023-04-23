@@ -36,6 +36,7 @@ parser.add_argument('--neg-y', action='store_true', help='performs Y negative')
 # o formato desses filtros especiais é: [nome, linhas, colunas, pivô x, pivô y, extensão com zeros]
 parser.add_argument('--filter', action='append', help='apply filter to image. Can be used multiple times for multiple filters. Function filters (like median) should be put inside square brackets without spaces (e.g. [median,3,3,1,1,true]')
 parser.add_argument('--filter-sequence', nargs='+', action='append', help='apply a sequence of filters to image. Can be used multiple times for multiple filter sequences')
+parser.add_argument('--filter-sum', nargs='+', action='append', help='applies all filter t the image and sums the results')
 
 args = parser.parse_args()
 
@@ -120,4 +121,22 @@ if args.filter_sequence:
             img_arr_filtered = new_filter.apply(img_arr_filtered)
         display_handler(img_arr_filtered, f'Filtered Image with {fs}')
         save_handler(img_arr_filtered, IMAGE_PATH, f'filter sequence-{[Path(f).stem for f in fs]}')
+
+# Verifica se há uma sequência de filtros a serem adicionados
+if args.filter_sum:
+    # Itera sobre a lista de sequências de filtros especificada nos argumentos
+    for fs in args.filter_sum:
+        # Faz uma cópia da imagem original para ser filtrada
+        img_arr_filtered = img_arr.copy()
+        filtered_imgs = []
+        for f in fs:
+            if f[0] == '[' and f[-1] == ']': # Se o elemento for uma string delimitada por colchetes [ e ], ele é tratado como uma função definida pelo usuário
+                new_filter = filter.get_function_filter(f)
+            else: # Caso contrário, considera que é um filtro em formato JSON e utiliza o método from_json do módulo filter para obter a instância do filtro
+                new_filter = filter.DataFilter.from_json(f)
+            filtered_imgs.append(new_filter.apply(img_arr.copy()))
+
+        final_img = filter.histogram_expansion(sum(filtered_imgs))
+        display_handler(final_img, f'Sum Filtered Image with {fs}')
+        save_handler(final_img, IMAGE_PATH, f'filter sum-{[Path(f).stem for f in fs]}')
 
