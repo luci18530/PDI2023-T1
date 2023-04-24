@@ -31,7 +31,7 @@ Questão 3:
 * python src/main.py .\img\teste.png --filter .\filters\sobelv.json
 * python src/main.py .\img\teste.png --filter .\filters\sobelh.json
 * python src/main.py .\img\teste.png --filter .\filters\sobel.json
-* python src/main.py .\img\teste.png --filter .\filters\emboss.json
+* python src/main.py .\img\teste.png --filter .\filters\emboss2.json ou emboss3.json
 * Measure-Command {python src/main.py .\img\teste.png --filter-sequence [mean,11,1,5,0,true] [mean,1,11,0,5,true]}
 * Measure-Command {python src/main.py .\img\teste.png --filter [mean,11,11,5,5,true]}
 
